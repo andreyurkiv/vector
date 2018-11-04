@@ -1,0 +1,1 @@
+/usr/bin/c++  -g -Wall -g  -rdynamic CMakeFiles/my_vector.dir/main.cpp.o  -o my_vector libmy_vector_lib.a 

@@ -3,4 +3,4 @@ project(my_vector)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(my_vector my_vector.cpp my_vector.h)
+add_executable(my_vector src/my_vector.cpp src/my_vector.h)

@@ -107,6 +107,8 @@ my_vector<T>::my_vector(my_vector::size_t n, const T &value) {
     v_size = n;
 }
 
+// TODO: Fix
+
 template<typename T>
 my_vector<T>::my_vector(typename my_vector<T>::iterator begin, typename my_vector<T>::iterator end) {
     size_t n = end - begin;
@@ -302,6 +304,8 @@ void my_vector<T>::swap(my_vector<T> &that) {
     that.array = temp;
 }
 
+// TODO: Fix bug with destruction of separate elements data[i].~T();
+
 template<typename T>
 void my_vector<T>::resize(my_vector::size_t new_size) {
     if (new_size > v_size) {
@@ -359,6 +363,10 @@ void my_vector<T>::pop_back() {
     --v_size;
 
 }
+
+
+// TODO: Fix v.push_back(v[5]) BUG !!!
+
 
 template<typename T>
 void my_vector<T>::push_back(const T &elem) {
@@ -456,6 +464,10 @@ bool my_vector<T>::operator>=(const my_vector<T> &other) const {
     }
     return v_size >= other.v_size;
 }
+
+// TODO: Memory leak !!!
+
+// TODO: Can be done using swap
 
 template<typename T>
 my_vector<T> &my_vector<T>::operator=(const my_vector<T> &obj) {

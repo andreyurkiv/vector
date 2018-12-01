@@ -1,21 +1,20 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include <iostream>
 #include <vector>
+#include <string> //! OF: MSVC, наприклад, без нього не вміє << std::string{}.
 #include "my_vector.h"
 
 using namespace std;
 
 struct President
 {
-	std::string name;
-	std::string country;
-	int year;
+	std::string name{"None"};
+	std::string country{"None"};
+	int year = 0;
 
-	President(){
-		name = "None";
-		country = "None";
-		year = 0;
-	}
-
+	President() = default;
 
 	President(std::string p_name, std::string p_country, int p_year)
 			: name(std::move(p_name)), country(std::move(p_country)), year(p_year)
@@ -25,6 +24,9 @@ struct President
 	President(President&& other)
 			: name(std::move(other.name)), country(std::move(other.country)), year(other.year)
 	{
+		//! OF: сподіваюся, Ви пам'ятаєте, що такий move constructor має сенс лише для виводу --
+		//! OF: по замовчуванню було б так само.
+		//! OF: те ж стосується конструктора копіювання вище!
 		std::cout << "I am being moved.\n";
 	}
 	President& operator=(const President& other) = default;

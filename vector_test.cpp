@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 //
 // Created by dinamic on 11/4/18.
 //
@@ -50,7 +52,7 @@ TEST(Indexing, RegularBrackets){
 
 TEST(Indexing, RegularBracketsException){
     my_vector<int> vec {1,2,3,4,5};
-    EXPECT_NO_THROW(vec[10]);
+    EXPECT_NO_THROW(vec[10]); //! OF: Це, таки, невизначена поведінка...
 }
 
 TEST(Indexing, AtIndexing){
@@ -94,7 +96,8 @@ TEST(Sizing, IsEmpty){
 TEST(Sizing, SizeCapacity) {
     my_vector<int> v = {1,2,3};
     EXPECT_EQ(v.size(), 3);
-    EXPECT_EQ(v.capacity(), 6);
+    EXPECT_EQ(v.capacity(), 6);//! OF: все ж, така перевірка засильно зав'язана на внутрішню реалізацію!
+                               //! OF >= size була б ОК
 }
 
 TEST(Sizing, ShrinkToFit){

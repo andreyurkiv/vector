@@ -1,11 +1,15 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.8)
 
 #option(test "Build all tests." OFF)
 
 set(PROJECT_NAME my_vector)
 project(${PROJECT_NAME} CXX)
 
-set(CMAKE_CXX_FLAGS "-g -Wall")
+if(NOT MSVC)
+    set(CMAKE_CXX_FLAGS "-g -Wall ${CMAKE_CXX_FLAGS}") # Не всі цей прапорцець розуміють!
+else()
+    set(CMAKE_CXX_FLAGS "/W3 /D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING  ${CMAKE_CXX_FLAGS}") # Це погана ідея, але MSVC 2017 карпизує
+endif()
 
 add_library(my_vector_lib my_vector.h my_vector.cpp)
 add_executable(my_vector main.cpp)

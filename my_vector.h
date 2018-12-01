@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <cstddef> //! OF: для size_t
 
 #ifndef PROJECT_MY_VECTOR_H
 #define PROJECT_MY_VECTOR_H
@@ -12,14 +13,15 @@ template<typename T>
 class my_vector {
 public:
 
-    typedef unsigned int size_t;
+    // typedef unsigned int size_t; //!: OF Plain wrong.
+    using size_t = std::size_t; //! OF: If you insist... Але краще по іншому назвати.
     typedef T* iterator;
 
     // constructors
 
     my_vector();
     my_vector(size_t n, const T &value);
-    my_vector(typename my_vector<T>::iterator begin, typename my_vector<T>::iterator end);
+    my_vector(iterator begin, iterator end); //! OF: В тілі шаблона my_vector<T>:: є синонімом просто  my_vector::
     my_vector(std::initializer_list<T> list);
 
     my_vector(const my_vector<T>& obj);
@@ -38,17 +40,17 @@ public:
     const T& operator[](size_t index) const noexcept;
     T& at(size_t index);
     const T& at(size_t index) const;
-    T& front();
-    const T& front() const;
-    T& back();
-    const T& back() const;
+    T& front() noexcept;
+    const T& front() const noexcept;
+    T& back() noexcept;
+    const T& back() const noexcept;
 
     // iterators
 
-    iterator begin();
-    iterator end();
-    const iterator cbegin() const;
-    const iterator cend() const;
+    iterator begin() noexcept;
+    iterator end() noexcept;
+    const iterator cbegin() const noexcept;
+    const iterator cend() const noexcept;
     std::reverse_iterator<iterator> rbegin();
     std::reverse_iterator<iterator> rend();
     std::reverse_iterator<const iterator> rcbegin() const;
@@ -56,9 +58,9 @@ public:
 
     // size manipulations
 
-    bool is_empty() const;
-    size_t size() const;
-    size_t capacity() const;
+    bool is_empty() const noexcept;
+    size_t size() const noexcept;
+    size_t capacity() const noexcept;
     void shrink_to_fit();
     void reserve(size_t n);
 
@@ -70,7 +72,7 @@ public:
 
     iterator insert(const iterator target, const T &value);
     iterator insert(const iterator target, iterator begin, iterator end);
-    iterator erase(const iterator target, const T &value);
+    iterator erase(const iterator target, const T &value); //! OF: а є її та наступної тести?
     iterator erase(iterator begin, iterator end);
 
     void pop_back();
@@ -147,6 +149,9 @@ my_vector<T>::my_vector(const my_vector<T> &obj) {
 
 template<typename T>
 my_vector<T>::my_vector(my_vector<T> &&obj) noexcept {
+//! OF: Plain wrong: тут слід перемістити вказівник на блок і розміри, а не робити те, що компілятор і сам здогадається.
+//! OF: Якщо не зрозуміло, про що мова -- звертайтеся на парі.
+//! OF: Так ще й про noexcept за поточної реалізації Ви обманюєте!
     v_capacity = obj.v_capacity;
     array = new T[v_capacity];
     for (size_t i = 0; i < obj.v_size; ++i) {
@@ -184,42 +189,42 @@ const T &my_vector<T>::at(my_vector::size_t index) const {
 }
 
 template<typename T>
-T &my_vector<T>::front() {
+T &my_vector<T>::front() noexcept {
     return *array;
 }
 
 template<typename T>
-const T &my_vector<T>::front() const {
+const T &my_vector<T>::front() const noexcept{
     return *array;
 }
 
 template<typename T>
-T &my_vector<T>::back() {
+T &my_vector<T>::back()  noexcept{
     return *(array + v_size - 1);
 }
 
 template<typename T>
-const T &my_vector<T>::back() const {
+const T &my_vector<T>::back() const noexcept{
     return *(array + v_size - 1);
 }
 
 template<typename T>
-typename my_vector<T>::iterator my_vector<T>::begin() {
+typename my_vector<T>::iterator my_vector<T>::begin() noexcept {
     return array;
 }
 
 template<typename T>
-typename my_vector<T>::iterator const my_vector<T>::cbegin() const {
+typename my_vector<T>::iterator const my_vector<T>::cbegin() const noexcept {
     return array;
 }
 
 template<typename T>
-typename my_vector<T>::iterator my_vector<T>::end() {
+typename my_vector<T>::iterator my_vector<T>::end() noexcept {
     return array + v_size;
 }
 
 template<typename T>
-typename my_vector<T>::iterator const my_vector<T>::cend() const {
+typename my_vector<T>::iterator const my_vector<T>::cend() const noexcept {
     return array + v_size;
 }
 
@@ -251,46 +256,49 @@ std::reverse_iterator<typename my_vector<T>::iterator const> my_vector<T>::rcend
 
 
 template<typename T>
-bool my_vector<T>::is_empty() const {
+bool my_vector<T>::is_empty() const noexcept {
     return v_size == 0;
 }
 
 template<typename T>
-typename my_vector<T>::size_t my_vector<T>::size() const {
+typename my_vector<T>::size_t my_vector<T>::size() const noexcept{
     return v_size;
 }
 
 template<typename T>
-typename my_vector<T>::size_t my_vector<T>::capacity() const {
+typename my_vector<T>::size_t my_vector<T>::capacity() const noexcept {
     return v_capacity;
 }
 
 template<typename T>
 void my_vector<T>::shrink_to_fit() {
-    v_capacity = v_size;
-    T *dest = new T[v_capacity];
+    //! OF: Ймовірно, варто спершу перевірити -- раптом розмір вже правильний.
+    //! OF: Операція, все ж, дорога...
+    T *dest = new T[v_size];
     for (size_t i = 0; i < v_size; ++i) {
         *(dest + i) = *(array + i);
     }
     delete[] array;
+    v_capacity = v_size; //! OF: Безпечніше щод овиключень це робити тут
     array = dest;
 }
 
 template<typename T>
 void my_vector<T>::reserve(my_vector::size_t n) {
     if (n > v_capacity) {
-        v_capacity = n;
-        T *dest = new T[v_capacity];
+        T *dest = new T[n];
         for (size_t i = 0; i < v_size; ++i) {
             *(dest + i) = *(array + i);
         }
         delete[] array;
+        v_capacity = n; //! OF: Безпечніше щод овиключень це робити тут
         array = dest;
     }
 }
 
 template<typename T>
 void my_vector<T>::swap(my_vector<T> &that) {
+    //! OF: Або std::swap -- це лаконічніше.
     size_t tmp_size = v_size;
     size_t tmp_capacity = v_capacity;
     T *temp = array;
@@ -305,7 +313,8 @@ void my_vector<T>::swap(my_vector<T> &that) {
 }
 
 // TODO: Fix bug with destruction of separate elements data[i].~T();
-
+//! OF: Ми з Вами обговорювали проблему тут! В конструкторах Ви ці об'єкти створюєте,
+//! OF: в дестркторі знищуєте, але і тут знищуєте. Цей код треба впорядкувати!
 template<typename T>
 void my_vector<T>::resize(my_vector::size_t new_size) {
     if (new_size > v_size) {
@@ -335,7 +344,7 @@ void my_vector<T>::clear() {
 
 template<typename T>
 typename my_vector<T>::iterator my_vector<T>::insert(my_vector::iterator const target, const T &value) {
-    ;
+    return nullptr;
 }
 
 template<typename T>
@@ -370,13 +379,14 @@ void my_vector<T>::pop_back() {
 
 template<typename T>
 void my_vector<T>::push_back(const T &elem) {
+    //! OF: той, доволі складний код, краще не дублювати, а написати раз та повторно використовувати!
     if (v_size == v_capacity) {
-        v_capacity = 2 * v_capacity;
-        T *neu = new T[v_capacity];
+        T *neu = new T[2 * v_capacity];
         for (size_t i = 0; i < v_size; ++i) {
             *(neu + i) = *(array + i);
         }
         delete[] array;
+        v_capacity = 2 * v_capacity;
         array = neu;
     }
     *(array + v_size) = elem;
@@ -386,6 +396,7 @@ void my_vector<T>::push_back(const T &elem) {
 template<typename T>
 template<class... Args>
 void my_vector<T>::emplace_back(Args &&... args) {
+    //! OF: див. комент до попереднього!
     if (v_size == v_capacity) {
         v_capacity = 2 * v_capacity;
         T *neu = new T[v_capacity];
@@ -471,18 +482,21 @@ bool my_vector<T>::operator>=(const my_vector<T> &other) const {
 
 template<typename T>
 my_vector<T> &my_vector<T>::operator=(const my_vector<T> &obj) {
-    v_capacity = obj.v_capacity;
-    T* tmp = new T[v_capacity];
+    T* tmp = new T[obj.v_capacity];
     for (size_t i = 0; i < obj.v_size; ++i) {
         *(tmp + i) = *(obj.array + i);
     }
     delete [] array;
     array = tmp;
+    v_capacity = obj.v_capacity; //! OF: Тут воно безпечніше.
     v_size = obj.v_size;
+    return *this; //! OF: BUG was here -- forgot return!
 }
 
 template<typename T>
 my_vector<T> &my_vector<T>::operator=(my_vector<T> &&obj) {
+//! OF: Plain wrong: тут слід перемістити вказівник на блок і розміри, а не робити те, що компілятор і сам здогадається.
+//! OF: Якщо не зрозуміло, про що мова -- звертайтеся на парі.
     v_capacity = obj.v_capacity;
     T* tmp = new T[v_capacity];
     for (size_t i = 0; i < obj.v_size; ++i) {
@@ -491,6 +505,7 @@ my_vector<T> &my_vector<T>::operator=(my_vector<T> &&obj) {
     delete [] array;
     array = tmp;
     v_size = obj.v_size;
+    return *this; //! OF: BUG was here -- forgot return!
 }
 
 
